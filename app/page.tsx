@@ -1,102 +1,242 @@
 'use client';
+
 import { useState } from 'react';
+import type { ChangeEvent } from 'react';
 
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const [formData, setFormData] = useState({
     contact: '',
-    story: ''
+    story: '',
   });
 
-  // ТА САМАЯ ФУНКЦИЯ, КОТОРУЮ НЕ ВИДЕЛ САЙТ
   const handleSubmit = async () => {
-    if (!formData.contact || !formData.story) {
-      alert('Заполни контакт и свою историю!');
+    if (!formData.contact.trim() || !formData.story.trim()) {
+      alert('Fill all fields');
       return;
     }
 
     setIsSending(true);
+
     try {
       const res = await fetch('/api/send-request', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
-        alert('Заявка отправлена в sokiwrld!');
-        setIsOpen(false);
-        setFormData({ contact: '', story: '' });
+        setIsSuccess(true);
+
+        setFormData({
+          contact: '',
+          story: '',
+        });
+
+        setTimeout(() => {
+          setIsOpen(false);
+          setIsSuccess(false);
+        }, 2500);
       } else {
-        alert('Ошибка на стороне сервера. Проверь route.ts');
+        alert('Server error');
       }
     } catch (e) {
-      alert('Ошибка соединения');
+      alert('Connection error');
     }
+
     setIsSending(false);
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 font-sans overflow-hidden">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-white/5 blur-[130px] rounded-full" />
+    <main className="relative min-h-screen overflow-hidden bg-black text-white">
 
-      <div className="relative z-10 text-center max-w-3xl">
-        <h1 className="text-7xl md:text-8xl font-black tracking-tighter mb-6 bg-gradient-to-b from-white via-gray-300 to-gray-500 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-          sokiwrld
-        </h1>
-        <h2 className="text-xl md:text-2xl font-light mb-6 text-gray-400 uppercase tracking-[0.3em]">Where skill meets code</h2>
-        
-        <button 
-          onClick={() => setIsOpen(true)}
-          className="group relative px-12 py-5 bg-white text-black font-black uppercase tracking-widest text-sm transition-all hover:bg-gray-200 hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] rounded-sm"
-        >
-          Connect Wallet
-          <div className="absolute -inset-0.5 bg-white opacity-20 blur group-hover:opacity-50 transition duration-500"></div>
-        </button>
+      {/* animated background */}
+      <div className="absolute inset-0">
+
+        {/* glow top */}
+        <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-purple-500/20 blur-[120px]" />
+
+        {/* glow bottom */}
+        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-cyan-500/10 blur-[120px]" />
+
+        {/* grid */}
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }}
+        />
+
       </div>
 
-      {/* Анкета-письмо */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
-          <div className="bg-[#0A0A0A] border border-white/10 p-10 w-full max-w-2xl relative rounded-sm shadow-2xl overflow-y-auto max-h-[90vh]">
-            <button onClick={() => setIsOpen(false)} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors text-xl">✕</button>
-            
-            <h3 className="text-3xl font-bold mb-2 tracking-tighter uppercase">Application Request</h3>
-            <p className="text-gray-500 text-xs uppercase tracking-[0.2em] mb-10 border-b border-white/5 pb-4">Tell us your story.</p>
-            
-            <div className="space-y-8">
-              <div>
-                <label className="block text-[10px] uppercase tracking-[0.3em] text-white/40 mb-4">Contact Info (TG / Discord)</label>
-                <input 
-                  type="text" 
-                  value={formData.contact}
-                  onChange={(e) => setFormData({...formData, contact: e.target.value})}
-                  placeholder="@yourname" 
-                  className="w-full bg-white/5 border border-white/10 p-4 text-sm focus:border-white/40 outline-none text-white transition-colors mb-8" 
-                />
+      {/* content */}
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 text-center">
 
-                <label className="block text-[10px] uppercase tracking-[0.3em] text-white/40 mb-4">Your Gaming & Industry Dossier</label>
-                <textarea 
-                  rows={10}
-                  value={formData.story}
-                  onChange={(e) => setFormData({...formData, story: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 p-6 text-sm focus:border-white/40 outline-none text-white transition-colors leading-relaxed resize-none"
-                  placeholder="Games, Software, Music, Journey..."
-                />
-              </div>
-              
-              <button 
-                onClick={handleSubmit}
-                disabled={isSending}
-                className="w-full py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs hover:bg-gray-200 transition-all active:scale-[0.98] disabled:opacity-50"
-              >
-                {isSending ? 'Sending...' : 'Submit Application'}
-              </button>
-            </div>
+        {/* top badge */}
+        <div className="mb-6 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/60 backdrop-blur-xl">
+          Invite Only • Gaming Society
+        </div>
+
+        {/* logo */}
+        <h1 className="text-6xl font-black tracking-tight md:text-8xl">
+          SOKI
+        </h1>
+
+        {/* subtitle */}
+        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/60 md:text-xl">
+          A private network for gamers, raiders, grinders and online degenerates.
+          Access will require 20 SOKI after public launch.
+        </p>
+
+        {/* stats */}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-white/40">
+
+          <div>
+            <span className="font-bold text-white">37</span> accepted members
           </div>
+
+          <div className="h-4 w-px bg-white/10" />
+
+          <div>
+            applications reviewed manually
+          </div>
+
+        </div>
+
+        {/* button */}
+        <button
+          onClick={() => setIsOpen(true)}
+          className="mt-12 rounded-2xl border border-white/10 bg-white px-8 py-4 text-lg font-bold text-black transition-all duration-300 hover:scale-105 hover:bg-white/90"
+        >
+          Request Access
+        </button>
+
+      </div>
+
+      {/* modal */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+
+          <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-2xl">
+
+            {!isSuccess ? (
+              <>
+                {/* modal header */}
+                <div className="mb-8 flex items-start justify-between">
+
+                  <div>
+                    <h2 className="text-3xl font-bold">
+                      Access Request
+                    </h2>
+
+                    <p className="mt-2 text-sm text-white/50">
+                      Applications are reviewed manually.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="text-xl text-white/40 transition hover:text-white"
+                  >
+                    ✕
+                  </button>
+
+                </div>
+
+                {/* contact input */}
+                <div className="mb-4">
+
+                  <label className="mb-2 block text-sm text-white/50">
+                    Contact
+                  </label>
+
+                  <input
+                    value={formData.contact}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setFormData({
+                        ...formData,
+                        contact: e.target.value,
+                      })
+                    }
+                    placeholder="@telegram / discord / X"
+                    className="w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-white/30"
+                  />
+
+                </div>
+
+                {/* story textarea */}
+                <div className="mb-6">
+
+                  <label className="mb-2 block text-sm text-white/50">
+                    Tell us about yourself
+                  </label>
+
+                  <textarea
+                    value={formData.story}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                      setFormData({
+                        ...formData,
+                        story: e.target.value,
+                      })
+                    }
+                    placeholder="Games, interests, clans, competitive experience..."
+                    rows={6}
+                    className="w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-white outline-none transition focus:border-white/30"
+                  />
+
+                </div>
+
+                {/* submit button */}
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSending}
+                  className="flex w-full items-center justify-center rounded-2xl bg-white py-4 font-bold text-black transition-all duration-300 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSending ? (
+                    <div className="flex items-center gap-3">
+
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent" />
+
+                      Sending...
+
+                    </div>
+                  ) : (
+                    'Submit Application'
+                  )}
+                </button>
+              </>
+            ) : (
+              /* success screen */
+              <div className="flex flex-col items-center py-10 text-center">
+
+                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/20 text-4xl">
+                  ✓
+                </div>
+
+                <h2 className="text-3xl font-bold">
+                  Application Received
+                </h2>
+
+                <p className="mt-4 max-w-md text-white/60">
+                  Your request has been sent successfully.
+                  If accepted, you will receive an invitation.
+                </p>
+
+              </div>
+            )}
+
+          </div>
+
         </div>
       )}
+
     </main>
   );
 }
